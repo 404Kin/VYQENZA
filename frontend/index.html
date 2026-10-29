@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VYQENZA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>The Art of Standing Out, Refined</h1>
+                <a href="#products-section" class="hero-btn">Discover Now</a>
+            </div>
+            <div class="hero-image">
+                <img src="https://i.pinimg.com/1200x/f3/11/ce/f311ceb616672fc5aa7d3c05a5ffa5af.jpg" alt="Modern Jacket">
+            </div>
+        </div>
+    </section>
+
+    <div class="container"><div class="divider"></div></div>
+
+    <!-- Products -->
+    <section class="container" id="products-section">
+        <h2 class="section-title">New Arrivals</h2>
+        
+        <!-- Filter Buttons -->
+        <div class="categories">
+            <div class="category active" data-filter="All"><h3>ALL</h3></div>
+            <div class="category" data-filter="Women"><h3>WOMEN</h3></div>
+            <div class="category" data-filter="Men"><h3>MAN</h3></div>
+            <div class="category" data-filter="Accessories"><h3>ACCESSORIES</h3></div>
+        </div>
+
+        <div id="filter-note"></div>
+        <div class="products" id="products">
+            <!-- products injected by JS -->
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <section class="container">
+        <div class="footer-section">
+            <div>
+                <h2 class="footer-title">Stay Connected</h2>
+                <p class="footer-content">Subscribe to our newsletter to receive updates on new arrivals, special offers and other discount information.</p>
+                <!-- Newsletter Input -->
+                <form id="newsletter-form" class="nl-form">
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                    <button type="submit" class="hero-btn">Subscribe</button>
+                </form>
+                <div id="nl-msg" style="font-size:13px;margin-top:10px"></div>
+            </div>
+            <div class="footer-banner">
+            </div>
+        </div>
+    </section>
+
+    <script src="js/api.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>

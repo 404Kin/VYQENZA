@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | VYQENZA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-admin="1" data-nochat="1">
+    <div class="adm">
+        <aside class="adm-side">
+            <div class="adm-logo">VYQENZA<small>Admin</small></div>
+            <nav id="adm-nav"></nav>
+            <div class="adm-foot"><a href="index.html"><i class="fas fa-arrow-left"></i> Back to store</a><a href="#" id="adm-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
+        </aside>
+        <main class="adm-main"><div id="adm-view"><p class="empty">Loading...</p></div></main>
+    </div>
+    <div id="adm-modal"><div class="adm-dialog"><button class="adm-x" id="adm-x">&times;</button><div id="adm-dialog-body"></div></div></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

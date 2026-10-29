@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | VYQENZA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <section class="container profile">
+        <aside class="profile-card">
+            <div class="avatar" id="p-avatar">?</div>
+            <h3 id="p-name">&nbsp;</h3>
+            <p class="note" id="p-email"></p>
+            <p class="note" id="p-since"></p>
+            <a href="admin.html" class="hero-btn" id="p-admin" style="display:none;margin:15px 0 0">Admin dashboard</a>
+            <button class="btn-line" id="p-logout">Logout</button>
+        </aside>
+        <div class="profile-main">
+            <div class="tabs"><a href="#orders" data-t="orders">My Orders</a><a href="#saved" data-t="saved">Saved Items</a><a href="#account" data-t="account">Account</a></div>
+            <div id="tab-body"></div>
+        </div>
+    </section>
+
+    <script src="js/api.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>
