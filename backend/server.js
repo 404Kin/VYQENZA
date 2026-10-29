@@ -9,6 +9,8 @@ for (const k of ["MONGO_URI", "JWT_SECRET"]) if (!process.env[k]) { console.erro
 const app = express();
 app.set("trust proxy", 1); // needed on Render/Railway etc. so rate limiting sees the real IP
 app.use(cors());
+// uploads are mounted first because they need a bigger JSON limit than the rest of the API
+app.use("/api/uploads", require("./routes/uploadRoutes"));
 app.use(express.json({ limit: "100kb" }));
 
 app.get("/api/health", (req, res) => res.json({ ok: true }));

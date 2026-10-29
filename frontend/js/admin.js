@@ -66,7 +66,32 @@ async function products() {
   };
 }
 
-const colorRow = (c = {}) => `<div class="crow"><input type="color" value="${esc(c.hex || "#111111")}"><input placeholder="Colour name (e.g. Black)" value="${esc(c.name || "")}"><input placeholder="Photo URL for this colour (optional)" value="${esc(c.imageUrl || "")}"><button type="button" class="b-del b-sm" data-rm>&times;</button></div>`;
+/* ---- image upload: shrink in the browser, send to the server, which stores it in MongoDB ---- */
+function shrink(file, max = 1200) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res(c.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => rej(new Error("Could not read this image"));
+    img.src = url;
+  });
+}
+function upload(btn, input, done) {
+  const pick = document.createElement("input");
+  pick.type = "file"; pick.accept = "image/*"; pick.style.display = "none"; document.body.appendChild(pick);
+  pick.onchange = () => {
+    const file = pick.files[0]; pick.remove(); if (!file) return;
+    const label = btn.textContent; btn.disabled = true; btn.textContent = "Uploading...";
+    run(async () => { try { input.value = (await A("/uploads", { method: "POST", body: { data: await shrink(file) } })).imageUrl; input.dispatchEvent(new Event("input")); done && done(); toast("Image uploaded"); } finally { btn.disabled = false; btn.textContent = label; } });
+  };
+  pick.click();
+}
+
+const colorRow = (c = {}) => `<div class="crow"><input type="color" value="${esc(c.hex || "#111111")}"><input placeholder="Colour name (e.g. Black)" value="${esc(c.name || "")}"><div class="upbox"><input class="curl" placeholder="Photo URL (optional)" value="${esc(c.imageUrl || "")}"><button type="button" class="b-line b-sm" data-up="color">Upload</button></div><button type="button" class="b-del b-sm" data-rm>&times;</button></div>`;
 function productForm(p, done) {
   const v = p || { category: "Men", colors: [{ name: "Black", hex: "#111111" }], sizes: ["S", "M", "L", "XL"], stock: 10 };
   openModal(`<h2 style="font-weight:400;margin-bottom:18px">${p ? "Edit product" : "Add product"}</h2>
@@ -76,7 +101,7 @@ function productForm(p, done) {
     <div><label>Stock</label><input name="stock" type="number" min="0" value="${v.stock ?? ""}" required></div>
     <div><label>Price (TK)</label><input name="price" type="number" min="0" step="0.01" value="${v.price ?? ""}" required></div>
     <div><label>Old price (optional, makes it a Sale item)</label><input name="oldPrice" type="number" min="0" step="0.01" value="${v.oldPrice || ""}"></div>
-    <div class="span2"><label>Main image URL</label><input name="imageUrl" value="${esc(v.imageUrl || "")}" required><img class="imgprev" id="iprev" src="${esc(v.imageUrl || "")}" alt="" onerror="this.style.visibility='hidden'" onload="this.style.visibility='visible'"></div>
+    <div class="span2"><label>Main image (upload a file or paste a link)</label><div class="upbox"><input name="imageUrl" value="${esc(v.imageUrl || "")}" placeholder="https://... or click Upload" required><button type="button" class="b-dark b-sm" data-up="main">Upload image</button></div><img class="imgprev" id="iprev" src="${esc(v.imageUrl || "")}" alt="" onerror="this.style.visibility='hidden'" onload="this.style.visibility='visible'"></div>
     <div class="span2"><label>Description</label><textarea name="description" rows="6" required>${esc(v.description || "")}</textarea></div>
   </div>
   <div class="f1"><label>Sizes (comma separated)</label><input name="sizes" value="${esc((v.sizes || []).join(", "))}" placeholder="S, M, L, XL"><div class="chips" style="margin-top:6px"><button type="button" data-sz="S, M, L, XL">S - XL</button><button type="button" data-sz="One Size">One Size</button><button type="button" data-sz="38, 39, 40, 41, 42, 43">Shoes 38-43</button></div></div>
@@ -86,10 +111,14 @@ function productForm(p, done) {
   f.imageUrl.oninput = () => ($("#iprev").src = f.imageUrl.value);
   $("#cadd").onclick = () => $("#crows").insertAdjacentHTML("beforeend", colorRow());
   $("#pcancel").onclick = closeModal;
-  f.onclick = (e) => { const r = e.target.closest("[data-rm]"), z = e.target.closest("[data-sz]"); if (r) r.parentElement.remove(); if (z) f.sizes.value = z.dataset.sz; };
+  f.onclick = (e) => {
+    const r = e.target.closest("[data-rm]"), z = e.target.closest("[data-sz]"), u = e.target.closest("[data-up]");
+    if (r) r.parentElement.remove(); if (z) f.sizes.value = z.dataset.sz;
+    if (u) { const input = u.dataset.up === "main" ? f.imageUrl : $(".curl", u.closest(".crow")); upload(u, input, () => { if (u.dataset.up === "main") $("#iprev").src = input.value; }); }
+  };
   f.onsubmit = (e) => {
     e.preventDefault();
-    const colors = $$(".crow", f).map((r) => { const i = $$("input", r); return { hex: i[0].value, name: i[1].value.trim(), imageUrl: i[2].value.trim() }; }).filter((c) => c.name);
+    const colors = $$(".crow", f).map((r) => { const i = $$("input", r); return { hex: i[0].value, name: i[1].value.trim(), imageUrl: $(".curl", r).value.trim() }; }).filter((c) => c.name);
     if (new Set(colors.map((c) => c.name.toLowerCase())).size !== colors.length) return toast("Colour names must be different");
     const body = { name: f.name.value.trim(), category: f.category.value, stock: +f.stock.value, price: +f.price.value, oldPrice: +f.oldPrice.value || 0, imageUrl: f.imageUrl.value.trim(), description: f.description.value.trim(), sizes: f.sizes.value.split(",").map((s) => s.trim()).filter(Boolean), colors };
     run(async () => { await A(p ? "/products/" + p._id : "/products", { method: p ? "PUT" : "POST", body }); closeModal(); toast(p ? "Product updated" : "Product added"); await done(); });

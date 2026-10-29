@@ -8,6 +8,9 @@ const money = (n) => "TK" + Number(n || 0).toFixed(2);
 const stars = (r) => [1, 2, 3, 4, 5].map((i) => `<i class="${r >= i ? "fas fa-star" : r >= i - 0.5 ? "fas fa-star-half-alt" : "far fa-star"}"></i>`).join("");
 const fmtDate = (d) => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
+// Uploaded photos are saved as "/api/uploads/<id>". When the page runs on another origin (Live Server) they need the backend address in front.
+const ORIGIN = API.replace(/\/api$/, ""), UP = "/api/uploads/";
+
 function toast(msg) {
   let t = $("#toast");
   if (!t) { t = document.createElement("div"); t.id = "toast"; document.body.appendChild(t); }
@@ -34,9 +37,10 @@ async function api(path, { method = "GET", body } = {}) {
   if (getToken()) headers.Authorization = "Bearer " + getToken();
   headers["x-guest-id"] = guestId();
   let res;
-  try { res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined }); }
+  try { res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body, (k, v) => (k === "imageUrl" && ORIGIN && typeof v === "string" ? v.split(ORIGIN + UP).join(UP) : v)) : undefined }); }
   catch { throw new Error("Cannot reach the server. Is the backend running?"); }
-  const data = await res.json().catch(() => ({}));
+  let data = {};
+  try { data = JSON.parse(await res.text(), (k, v) => (k === "imageUrl" && typeof v === "string" && v.startsWith(UP) ? ORIGIN + v : v)); } catch {}
   if (!res.ok) {
     if (res.status === 401 && getToken()) { localStorage.removeItem("token"); localStorage.removeItem("user"); }
     throw Object.assign(new Error(data.message || "Something went wrong"), { status: res.status });

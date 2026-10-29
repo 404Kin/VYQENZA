@@ -19,4 +19,10 @@ const Chat = mongoose.model("Chat", new mongoose.Schema({
   unreadUser: { type: Number, default: 0 },
 }, { timestamps: true }));
 
-module.exports = { Subscriber, Chat };
+// Uploaded product photos live in MongoDB (Render/Railway disks are wiped on restart)
+const Image = mongoose.model("Image", new mongoose.Schema({
+  data: { type: Buffer, required: true },
+  contentType: { type: String, required: true },
+}, { timestamps: true }));
+
+module.exports = { Subscriber, Chat, Image };
